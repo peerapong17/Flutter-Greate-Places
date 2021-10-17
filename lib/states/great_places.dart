@@ -2,17 +2,21 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:great_places/models/place_location.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/place.dart';
 import '../helpers/db_helper.dart';
 import '../helpers/location_helper.dart';
 
-class GreatPlaces with ChangeNotifier {
+class GreatPlaces extends ChangeNotifier {
   List<Place> _items = [];
 
   List<Place> get items {
     return [..._items];
+  }
+
+  set items(List<Place> items) {
+    _items = items;
+    notifyListeners();
   }
 
   Place findById(String id) {
@@ -32,15 +36,13 @@ class GreatPlaces with ChangeNotifier {
       address: address,
     );
     final newPlace = Place(
-      id: Uuid().v1(),
       image: pickedImage,
       title: pickedTitle,
       location: updatedLocation,
     );
-    _items.add(newPlace);
+    items.add(newPlace);
     notifyListeners();
     DBHelper.insert('user_places', {
-      'id': newPlace.id,
       'title': newPlace.title,
       'image': newPlace.image.path,
       'loc_lat': newPlace.location.latitude,
@@ -51,20 +53,28 @@ class GreatPlaces with ChangeNotifier {
 
   Future<void> fetchAndSetPlaces() async {
     final dataList = await DBHelper.getData('user_places');
-    _items = dataList
+    print(dataList);
+    items = dataList
         .map(
           (item) => Place(
-                id: item['id'],
-                title: item['title'],
-                image: item['image'],
-                location: PlaceLocation(
-                  latitude: item['loc_lat'],
-                  longitude: item['loc_lng'],
-                  address: item['address'],
-                ),
-              ),
+            id: item['id'],
+            title: item['title'],
+            image: File(item['image']),
+            location: PlaceLocation(
+              latitude: item['loc_lat'],
+              longitude: item['loc_lng'],
+              address: item['address'],
+            ),
+          ),
         )
         .toList();
+
+    notifyListeners();
+  }
+
+  Future<void> deletePlace(int id) async {
+    await DBHelper.delete('user_places', id);
+    items.removeWhere((element) => element.id == id);
     notifyListeners();
   }
 }
