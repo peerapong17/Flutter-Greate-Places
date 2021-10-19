@@ -17,6 +17,8 @@ class AddPlaceScreen extends StatefulWidget {
 
 class _AddPlaceScreenState extends State<AddPlaceScreen> {
   final _titleController = TextEditingController();
+  final _descController = TextEditingController();
+  final _writerController = TextEditingController();
   File? _pickedImage;
   PlaceLocation? _pickedLocation;
 
@@ -30,12 +32,18 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
 
   void _savePlace() {
     if (_titleController.text.isEmpty ||
+        _descController.text.isEmpty ||
+        _writerController.text.isEmpty ||
         _pickedImage == null ||
         _pickedLocation == null) {
       return;
     }
-    Provider.of<GreatPlaces>(context, listen: false)
-        .addPlace(_titleController.text, _pickedImage!, _pickedLocation!);
+    Provider.of<GreatPlaces>(context, listen: false).addPlace(
+        _titleController.text,
+        _descController.text,
+        _writerController.text,
+        _pickedImage!,
+        _pickedLocation!);
     Navigator.of(context).pop();
   }
 
@@ -57,6 +65,14 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                     TextField(
                       decoration: InputDecoration(labelText: 'Title'),
                       controller: _titleController,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Description'),
+                      controller: _descController,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Writer'),
+                      controller: _writerController,
                     ),
                     SizedBox(
                       height: 10,

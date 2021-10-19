@@ -19,12 +19,14 @@ class GreatPlaces extends ChangeNotifier {
     notifyListeners();
   }
 
-  Place findById(String id) {
-    return _items.firstWhere((place) => place.id == id);
+  Place findById(int id) {
+    return items.firstWhere((place) => place.id == id);
   }
 
   Future<void> addPlace(
     String pickedTitle,
+    String pickedDesc,
+    String pickedWriter,
     File pickedImage,
     PlaceLocation pickedLocation,
   ) async {
@@ -37,17 +39,23 @@ class GreatPlaces extends ChangeNotifier {
     );
     final newPlace = Place(
       image: pickedImage,
+      description: pickedDesc,
       title: pickedTitle,
+      writer: pickedWriter,
       location: updatedLocation,
+      createdAt: new DateTime.now(),
     );
     items.add(newPlace);
     notifyListeners();
     DBHelper.insert('user_places', {
       'title': newPlace.title,
+      'description': newPlace.description,
+      'writer': newPlace.writer,
       'image': newPlace.image.path,
       'loc_lat': newPlace.location.latitude,
       'loc_lng': newPlace.location.longitude,
       'address': newPlace.location.address!,
+      'createdAt': newPlace.createdAt.toIso8601String(),
     });
   }
 
@@ -59,11 +67,16 @@ class GreatPlaces extends ChangeNotifier {
           (item) => Place(
             id: item['id'],
             title: item['title'],
+            description: item['description'],
+            writer: item['writer'],
             image: File(item['image']),
             location: PlaceLocation(
               latitude: item['loc_lat'],
               longitude: item['loc_lng'],
               address: item['address'],
+            ),
+            createdAt: DateTime.parse(
+              item['createdAt'],
             ),
           ),
         )
